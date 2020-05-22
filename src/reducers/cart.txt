@@ -1,0 +1,113 @@
+import {REMOVE,INCREASE,DECREASE,ADD_TO_CART,CLEAR_CART} from "../actions/Type"
+function getCartFromLocalStorage() {
+    return localStorage.getItem("cart")
+    ? JSON.parse(localStorage.getItem("cart"))
+    : [];
+}
+const initialState = {}
+
+
+
+export default function(state=initialState,action)  {
+    // console.log("Cart Reducer");
+    // console.log(action);
+    const {type,payload} = action
+    console.log(payload);
+
+    
+    // console.log(state.items);
+    
+    function local_add(data){
+        JSON.stringify(data)
+        localStorage.setItem("cart",data)
+    }
+    
+    
+    switch (type){
+        
+        
+        case REMOVE:
+            // return state.filter(item => item.id !== action.payload);
+            const rem_item = state.items.filter(item => item.id !== payload)
+            console.log(rem_item);
+            
+            
+            console.log("Removed");
+            console.log(payload);
+            
+            return state.items. filter(item => item.id !== action.payload);
+            
+        
+        case INCREASE:            
+            const inc_product = state.items.map(item=>{
+                return item.id === payload
+                ? { ...item,amount: item.amount + 1}
+                : {...item}
+            })
+            let incTotal = inc_product.reduce((total, cartItems)=>{
+                return (total += cartItems.amount * cartItems.price)
+            }, 0)  
+            const data={...state,items:inc_product,total:incTotal}
+            local_add(data)
+            
+            return {...state,items:inc_product,total:incTotal}
+            
+
+            
+        case DECREASE:            
+             const dec_product = state.items.map(item=>{
+            return item.id === payload
+            ? { ...item,amount: item.amount - 1}
+            : {...item}
+        })
+        let decTotal = dec_product.reduce((total, cartItems)=>{
+            return (total += cartItems.amount * cartItems.price)
+        }, 0)    
+        
+        return {...state,items:dec_product,total:decTotal}
+  
+
+        case ADD_TO_CART:
+            console.log("ADDA");           
+            const {id,imageurl,title,price} = payload
+            let product = {id,imageurl,title,price,amount:1}
+            // console.log(state.items);
+            
+            const item_flag = state.items.find(item=> item.id===product.id)
+            // console.log(item_flag);
+            
+            if(item_flag){                               
+                const newcart = state.items.map(item => {
+                    return item.id === product.id
+                    ? { ...item,amount:item.amount+1}
+                    :{...item}
+                })                
+                product=newcart
+            }
+            else{
+                product=[...state.items,product]
+            }
+            let newTotal = product.reduce((total, cartItems)=>{
+                return (total += cartItems.amount * cartItems.price)
+            }, 0)    
+            
+            const add_data={...state,items:product,total:newTotal}
+            // JSON.stringify(add_data)
+            // localStorage.setItem("cart",data)
+            
+            return {...state,items:product,total:newTotal}
+        
+
+        case CLEAR_CART:
+            console.log("clear cart added");
+            
+
+            return {...state,items:[],total:0}
+        
+
+        default:
+            return state 
+    }    
+    
+    
+}
